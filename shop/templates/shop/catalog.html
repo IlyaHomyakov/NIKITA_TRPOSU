@@ -1,0 +1,115 @@
+{% extends 'shop/index.html' %}
+{% load static %}
+{% block head %}
+    <title>Каталог товаров</title>
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/order_confirmation.css' %}">
+
+{% endblock %}
+
+
+{% block container %}
+
+    <div class="flex row header">
+        <a href="{% url 'catalog' %}" class="logo">НЕЧИПДИП</a>
+        <a href="javascript:" class="open-cart" id="open-cart-btn">Корзина <sub id="cart-items-counter">0</sub></a>
+    </div>
+
+    <div class="flex row content">
+        <div class="flex column categories">
+            <a href="{% url 'catalog' %}"
+               class="category flex {% if request.resolver_match.url_name == 'catalog' %}active-link{% endif %}">Все
+                товары</a>
+            {% for c in category %}
+                <a href="/{{ c.id }}/"
+                   class="category flex {% if request.resolver_match.kwargs.category_id == c.id %}active-link{% endif %}">{{ c.category }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="flex row products">
+            {% if items %}
+                {% for item in items %}
+                    <div class="flex column product-item">
+                        <img src="{{ item.category.category_image.url }}" alt="item-image" class="item-image">
+                        <h4 class="item-title"
+                            id="item-{{ item.id }}-title">{{ item.category }}: {{ item.specification }}</h4>
+                        <p class="item-price" id="item-{{ item.id }}-price">{{ item.price }} РУБ.</p>
+                        <div class="flex row item-to-cart">
+                            <label for="item-{{ item.id }}-amount">Кол-во:</label>
+                            <input type="number" class="item-amount" value="0" min="0" id="item-{{ item.id }}-amount"
+                                   step="1">
+                            <button class="add-item-to-cart" onclick="addItemToCart({{ item.id }})">В корзину</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <h2 class="nothing-to-show">Товары отсутсвуют</h2>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    <div class="cart-background-hidden" id="cart-window">
+        <div class="flex column cart">
+            <div class="flex cart-header">
+                <p class="cart-header-title" id="cart-header-title">Корзина</p>
+                <a href="javascript:" class="close-cart" id="close-cart-btn">&#215;</a>
+            </div>
+
+            <div class="flex column cart-content" id="cart-content">
+                <div class="flex cart-content-item">
+                    <p class="cart-item-title"></p>
+                    <p class="cart-item-price"></p>
+                    <input type="text" class="cart-item-amount" onchange="updateCartItemAmount()">
+                    <button class="cart-item-delete">&#215;</button>
+                </div>
+            </div>
+
+            <div class="flex cart-footer" id="cart-footer">
+                <button class="go-to-cart-confirmation" id="go-to-cart-confirmation-btn"
+                        onclick="openOrderConfirmation()">
+                    Перейти к оформлению заказа
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-confirmation-background-hidden" id="order-confirmation-window">
+        <div class="flex column order-confirmation">
+            <div class="flex order-confirmation-header">
+                <p class="order-confirmation-header-title" id="order-confirmation-header-title">Введите данные
+                    заказа</p>
+                <a href="javascript:;" class="close-order-confirmation" id="close-order-confirmation-btn">&#215;</a>
+            </div>
+
+            <div class="flex column order-confirmation-content" id="order-confirmation-content">
+                <label for="username">Имя</label>
+                <input type="text" name="username" class="order-username order-confirmation-input" id="customer-name">
+
+                <label for="user-tel">Номер телефона</label>
+                <input type="tel" name="user-tel" class="order-username order-confirmation-input" id="customer-tel">
+
+                <label for="address">Адрес</label>
+                <input type="text" name="address" class="order-username order-confirmation-input" id="customer-address">
+            </div>
+
+            <div class="flex order-confirmation-footer">
+                <button class="flex submit-order" id="submit-order-btn">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="column order-confirmed-background-hidden" id="order-confirmed-window">
+        <div class="flex column order-confirmed-modal">
+            <h1 class="confirmed">Ваш заказ принят</h1>
+            <button class="ok" onclick="closeOrderConfirmed()">ОК</button>
+
+        </div>
+    </div>
+
+    {% csrf_token %}
+{% endblock %}
+
